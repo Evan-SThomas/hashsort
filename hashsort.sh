@@ -1,78 +1,39 @@
 #!/bin/bash
-#cp ~/pytt/geo/adata_100k_20w/data/plt99* ~/pytt/hashsort/dumdata/
-hashlimit=$( echo "obase=2;ibase=16;63" | bc -l)
-#cp $1 $2
-cd dumdata
-flo=$( ls )
-#echo "${flo[@]}"
-#flo="dumdata1 dumdata2 dumdata3"
-fl=($(echo $flo | tr " " "\n"))
 
+#Set limit for hashes, this determines the fraction of data in each set.
+hashlimit=$( echo "obase=2;ibase=16;63" | bc -l)
+#Move into the data directory.
+cd $1
+#Make train and test data directories.
+mkdir ../traindata
+mkdir ../testdata
+#Takes a summary of what's there.
+flo=$( ls )
+#Splits list by whitespace
+fl=($(echo $flo | tr " " "\n"))
+#For each file in the data directory:
 for i in "${fl[@]}"
 do
+#	Calculate the sha256 hash
 	dumhash=$( sha256sum $i)
+#	Split by whitespace.
 	IFS=' ' read -ra dumhash <<< "$dumhash"
+#	Pick the hash part of the result.
 	dumhash=${dumhash[0]}
+#	Convert lowercase letters to uppercase. Also only keeps last two digits
 	hexhash=$( echo ${dumhash:62} | tr [:lower:] [:upper:] )
+#	Convert hex number to binary representation.
 	binhash=$( echo "obase=2;ibase=10;$hexhash" | bc -l)
+#	If the result is sorted according to wheter it's above or below the hash limit.
 	if [ $binhash -lt $hashlimit ]
 	then
-		mv $i ../dd1
-		#echo $i
-		#echo $hexhash
-		#echo $binhash
-		#echo blahblah1
+		mv $i ../traindata
 	else
-		mv $i ../dd2
-	#	echo $i
-	#	echo $hexhash
-	#	echo $binhash
-	#	echo blahblah2
+		mv $i ../testdata
 	fi
 done
+#Results are printed to the terminal.
 echo "less than: "
-echo $( ls /home/et/pytt/hashsort/dd1 -1 | wc -l )
+echo $( ls ../traindata -1 | wc -l )
 echo "more than: "
-echo $( ls /home/et/pytt/hashsort/dd2 -1 | wc -l )
-
-
-cd ~/pytt/hashsort/dd1
-mv * ../dumdata
-cd ~/pytt/hashsort/dd2
-mv * ../dumdata
-#echo $my_string
-#echo $( pwd )
-
-
-#hexhasho=${my_array[0]}
-##echo $binhash
-#for i in fl 
-#do
-#	if [ $binhash -lt $hashlimit ]
-#	then
-#		echo ooo
-#	fi
-#done
-
-
-
-
-
-
-
-
-
-
-
-
-
-#for x in $fl
-#do
-#	shadum=$( sha256sum $x )
-#	if [ $shadum -gt 01 ]
-#	then
-#		echo $shadum
-#	fi
-#	
-#done
-#
+echo $( ls ../testdata -1 | wc -l )
