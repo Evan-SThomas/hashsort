@@ -4,9 +4,24 @@
 hashlimit=$( echo "obase=2;ibase=16;63" | bc -l)
 #Move into the data directory.
 cd $1
+
+#Test if directories exist. Reset to unsorted data.
+if [ -d $"./traindata" ]
+then
+	mv ./traindata/* ./
+	rm -r ./traindata
+fi
+
+if [ -d $"./testdata" ]
+then
+	mv ./testdata/* ./
+	rm -r ./testdata
+fi
+
 #Make train and test data directories.
 mkdir ../traindata
 mkdir ../testdata
+
 #Takes a summary of what's there.
 flo=$( ls )
 #Splits list by whitespace
